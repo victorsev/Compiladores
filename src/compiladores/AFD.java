@@ -9,16 +9,6 @@ package compiladores;
  *
  * @author Jorge Ortega
  */
-public class Especiales {
-    final char EPSILON=(char)7;
-    final char FIN=(char)0;
-//    final int ERORR=20000;
-//    final int OMITIR=20001;
-    
-
-    public char getEPSILON() {
-        return EPSILON;
-    }
-    
+public class AFD {
     
 }

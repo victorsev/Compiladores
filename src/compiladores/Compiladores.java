@@ -43,7 +43,7 @@ public class Compiladores {
 //            System.out.println(e.IdEstado);
 //        }
         
-        // creaacion de (a|b)+c*
+        // creaacion de (a|b)+c+
         AFN a =new AFN();
         a.CrearAFNBasico('a');
         AFN b =new AFN();
@@ -57,24 +57,25 @@ public class Compiladores {
         AFN c =new AFN();
         c.CrearAFNBasico('c');
         //c*
-        c.cerraduraAsterisco();
+        c.cerraduraSuma();
         
         //(a|b)+c*
         a.concatenar(c);
         
-        //CerraduraEpsilon
-        for(Estado e: a.EdosAFN){
-            System.out.println("Estado del AFN");
-            System.out.println(e.IdEstado);
-            
-            HashSet<Estado> res=a.cerraduraEpsilon(e);
-            System.out.println("Estados de la cerradura");
-            for(Estado Edo: res){
-                System.out.println(Edo.IdEstado);
-            }
-            
-        }
-        
+        a.ConvAFNaAFD();
+//        //CerraduraEpsilon
+//        for(Estado e: a.EdosAFN){
+//            System.out.println("Estado del AFN");
+//            System.out.println(e.IdEstado);
+//            
+//            HashSet<Estado> res=a.cerraduraEpsilon(e);
+//            System.out.println("Estados de la cerradura");
+//            for(Estado Edo: res){
+//                System.out.println(Edo.IdEstado);
+//            }
+//            
+//        }
+//        
         
         
         

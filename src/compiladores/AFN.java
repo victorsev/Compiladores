@@ -5,7 +5,11 @@
  */
 package compiladores;
 
+import java.util.AbstractQueue;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.PriorityQueue;
+import java.util.Queue;
 import java.util.Stack;
 
 /**
@@ -287,4 +291,120 @@ public class AFN {
         
         return C;
     }
+    
+    
+    public void ConvAFNaAFD() {
+        int CardAlfabeto, NumEdosAFD;
+        int i , j, r ;
+        char[] arrAlfabeto;
+        ConjIJ Ij, Ik;
+        boolean existe;
+
+        HashSet<Estado> ConjAux = new HashSet<Estado>();
+        HashSet<ConjIJ> EdosAFD = new HashSet<ConjIJ>();
+        Queue<ConjIJ> EdosSinAnalizar = new LinkedList<ConjIJ>();
+        
+        EdosAFD.clear();
+        EdosSinAnalizar.clear();
+        CardAlfabeto=Alfabeto.size();
+        
+        arrAlfabeto=new char [CardAlfabeto];
+        i=0;
+        
+        for(char c: Alfabeto){
+            arrAlfabeto[i++]=c;
+        }
+        
+        j=0;// este es el contador de los estados
+        Ij= new ConjIJ(CardAlfabeto);
+        Ij.conjIJ=cerraduraEpsilon(this.EdoIni);
+        Ij.j=j;
+        
+        EdosAFD.add(Ij);
+        EdosSinAnalizar.add(Ij);
+        j++;
+        
+        while(EdosSinAnalizar.size() !=0 ){
+            Ij=EdosSinAnalizar.remove();
+            for(char c: arrAlfabeto){
+                Ik=new ConjIJ(CardAlfabeto);
+                Ik.conjIJ=IrA(Ij.conjIJ, c);
+                if(Ik.conjIJ.size() == 0 )//si entra no hubo transiciones
+                    continue;
+                existe=false;
+                for(ConjIJ I: EdosAFD){
+                    if(I.conjIJ.equals(Ik.conjIJ)){
+                        existe=true;
+                        r= indiceCaracter(arrAlfabeto, c);
+                        Ij.TransicionesAFD[r]=I.j;
+                        break;
+                        
+                    }
+                }
+                if (!existe) {
+                    Ik.j=j;
+                    r= indiceCaracter(arrAlfabeto, c);
+                    Ij.TransicionesAFD[r]=Ik.j;
+                    EdosAFD.add(Ik);
+                    EdosSinAnalizar.add(Ik);
+                    j++;
+                }
+            }
+        }
+        NumEdosAFD = j;
+        i=0;
+        for(ConjIJ c: EdosAFD){         
+            
+            System.out.println(i);
+            System.out.println(c);
+            i++;
+        }
+    }
+    
+    public int indiceCaracter(char [] pajar, char aguja){
+            int encontro = -1;
+            for(int i = 0; i < pajar.length; i++){
+                if(pajar[i] == aguja){
+                   encontro = i;
+                   return i;
+                }
+            }
+            return  -1;
+    }
+    public void UnionEspecialANFs(AFN f, int Token){
+        Estado e;
+        if(!this.SeAgregoAFNUnionLexico){
+            this.EdosAFN.clear();
+            this.Alfabeto.clear();
+            e=new Estado();
+            e.Trans.add(new Transicion(c.EPSILON, f.EdoIni));
+            this.EdoIni=e;
+            this.EdosAFN.add(e);
+            this.SeAgregoAFNUnionLexico=true;
+            //asignar el token 10 al primer AFN
+            for(Estado EdoAcep: this.EdosAcept){
+                EdoAcep.Token=10;
+            }
+        }else{
+            this.EdoIni.Trans.add(new Transicion(c.EPSILON, f.EdoIni));
+        }
+        //aginacion de token a al segundo estado
+        for(Estado EdoAcep: f.EdosAcept){
+            EdoAcep.Token=Token;
+        }
+        for(char c: f.Alfabeto){
+            this.Alfabeto.add(c);
+        }
+        for(Estado c: f.EdosAFN){
+            this.EdosAFN.add(c);
+        }
+        for(Estado c: f.EdosAcept){
+            this.EdosAcept.add(c);
+        }
+  
+    }
+        
+    
+
+
 }
