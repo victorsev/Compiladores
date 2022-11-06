@@ -5,9 +5,14 @@
  */
 package compiladores;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -56,21 +61,43 @@ public class Compiladores {
         //creando c
         AFN c =new AFN();
         c.CrearAFNBasico('c');
-        //c*
+        //c+
         c.cerraduraSuma();
         
-        //(a|b)+c*
+        //(a|b)+c+
         a.concatenar(c);
         
-        a.ConvAFNaAFD();
+        AFN d =new AFN();
+        d.UnionEspecialANFs(a, 10);
+        a.ConvAFNaAFD("AFD");
+        AFD e =new AFD();
+        e.leerAFDdeArchivo("AFD", 0);
+        System.out.println("TablaAFD = " + e.TablaAFD.get(0).get(256));
+        
+        AnalizLexico analizador = new AnalizLexico("abcc", "AFD", 0);
+        int res=0;
+        res=analizador.yylex();
+        System.out.println("analizador = " + res);
+        System.out.println("analizador = " + analizador.yytext);
+        
 //        //CerraduraEpsilon
 //        for(Estado e: a.EdosAFN){
 //            System.out.println("Estado del AFN");
 //            System.out.println(e.IdEstado);
 //            
-//            HashSet<Estado> res=a.cerraduraEpsilon(e);
+//            HashSet<Estado> epsilon=a.cerraduraEpsilon(e);
 //            System.out.println("Estados de la cerradura");
-//            for(Estado Edo: res){
+//            for(Estado Edo: epsilon){
+//                System.out.println(Edo.IdEstado);
+//            }
+//            HashSet<Estado> mover=a.Mover(epsilon, 'a');
+//            System.out.println("Estados de mover");
+//            for(Estado Edo: mover){
+//                System.out.println(Edo.IdEstado);
+//            }
+//            HashSet<Estado> ira=a.IrA(epsilon, 'a');
+//            System.out.println("Estados de Ir A");
+//            for(Estado Edo: ira){
 //                System.out.println(Edo.IdEstado);
 //            }
 //            

@@ -12,8 +12,20 @@ package compiladores;
 public class Especiales {
     final char EPSILON=(char)7;
     final char FIN=(char)0;
-//    final int ERORR=20000;
-//    final int OMITIR=20001;
+    final int ERORR=2000;
+    final int OMITIR=2001;
+
+    public char getFIN() {
+        return FIN;
+    }
+
+    public int getERORR() {
+        return ERORR;
+    }
+
+    public int getOMITIR() {
+        return OMITIR;
+    }
     
 
     public char getEPSILON() {

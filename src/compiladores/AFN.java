@@ -5,12 +5,17 @@
  */
 package compiladores;
 
-import java.util.AbstractQueue;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Stack;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -127,10 +132,20 @@ public class AFN {
     public AFN concatenar(AFN f2){
         //no se crean nuevos estados
         //estado inicial es el estado de primero
-        //los estados de aceptacion del primer AFN es el inicial del segundo
-        for(Estado e: this.EdosAcept){
-            e=f2.EdoIni;
+        //Se agrengan los estados del segundo AFN
+        for(Estado e: f2.EdosAFN){
+            if(e.IdEstado!=f2.EdoIni.IdEstado){
+                this.EdosAFN.add(e);
+            } else{//los estados de aceptacion del primer AFN es el inicial del segundo
+                for(Estado x: this.EdosAcept){
+                    x.EdoAcept=f2.EdoIni.EdoAcept;
+                    x.IdEstado=f2.EdoIni.IdEstado;
+                    x.Token=f2.EdoIni.Token;
+                    x.Trans=f2.EdoIni.Trans;
+                }
+            }         
         }
+        
         //se renuevan los estados de aceptacion
         this.EdosAcept.clear();
         for(Estado e: f2.EdosAcept){
@@ -139,12 +154,6 @@ public class AFN {
         //se agrega el alfabeto del segundo AFN
         for(char e: f2.Alfabeto){
             this.Alfabeto.add(e);
-        }
-        //Se agrengan los estados del segundo AFN
-        for(Estado e: f2.EdosAFN){
-            if(e.IdEstado!=f2.EdoIni.IdEstado){
-                this.EdosAFN.add(e);
-            }          
         }
         
         
@@ -156,12 +165,7 @@ public class AFN {
         Estado e1=new Estado();
         //nuevo estado final
         Estado e2=new Estado();
-        //el 07 en ASCII se tomara como epsilon
-        //se recorre el estado inical a e1, con tranciciones epsilon
-        Transicion t1=new Transicion(c.EPSILON, this.EdoIni);
-        e1.Trans.add(t1);
-        //e1 se hace estado inicial
-        this.EdoIni=e1;
+        
         // se hacen las traciciones de los estados de aceptacion es e2 con tranciciones epsilon
         //se hace la tracicion al estado inicial con epsilon
         for(Estado e: this.EdosAcept){
@@ -169,6 +173,14 @@ public class AFN {
             e.Trans.add(new Transicion(c.EPSILON, this.EdoIni));
             e.EdoAcept=false;
         }
+        
+        //el 07 en ASCII se tomara como epsilon
+        //se recorre el estado inical a e1, con tranciciones epsilon
+        Transicion t1=new Transicion(c.EPSILON, this.EdoIni);
+        e1.Trans.add(t1);
+        //e1 se hace estado inicial
+        this.EdoIni=e1;
+        
         //e2 se hace estado de aceptacion
         e2.EdoAcept=true;
         //se borran los estados de aceptacion que tenia
@@ -185,12 +197,8 @@ public class AFN {
         Estado e1=new Estado();
         //nuevo estado final
         Estado e2=new Estado();
-        //el 07 en ASCII se tomara como epsilon
-        //se recorre el estado inical a e1, con tranciciones epsilon
-        Transicion t1=new Transicion(c.EPSILON, this.EdoIni);
-        e1.Trans.add(t1);
-        //e1 se hace estado inicial
-        this.EdoIni=e1;
+        
+        
         // se hacen las traciciones de los estados de aceptacion es e2 con tranciciones epsilon
         //se hace la tracicion al estado inicial con epsilon
         for(Estado e: this.EdosAcept){
@@ -198,6 +206,14 @@ public class AFN {
             e.Trans.add(new Transicion(c.EPSILON, this.EdoIni));
             e.EdoAcept=false;
         }
+        
+        //el 07 en ASCII se tomara como epsilon
+        //se recorre el estado inical a e1, con tranciciones epsilon
+        Transicion t1=new Transicion(c.EPSILON, this.EdoIni);
+        e1.Trans.add(t1);
+        //e1 se hace estado inicial
+        this.EdoIni=e1;
+        
         //e2 se hace estado de aceptacion
         e2.EdoAcept=true;
         //se borran los estados de aceptacion que tenia
@@ -219,17 +235,20 @@ public class AFN {
         Estado e1=new Estado();
         //nuevo estado final
         Estado e2=new Estado();
+        
+        // se hacen las traciciones de los estados de aceptacion es e2 con tranciciones epsilon
+        for(Estado e: this.EdosAcept){
+            e.Trans.add(new Transicion(c.EPSILON, e2));
+            e.EdoAcept=false;
+        }
+        
         //el 07 en ASCII se tomara como epsilon
         //se recorre el estado inical a e1, con tranciciones epsilon
         Transicion t1=new Transicion(c.EPSILON, this.EdoIni);
         e1.Trans.add(t1);
         //e1 se hace estado inicial
         this.EdoIni=e1;
-        // se hacen las traciciones de los estados de aceptacion es e2 con tranciciones epsilon
-        for(Estado e: this.EdosAcept){
-            e.Trans.add(new Transicion(c.EPSILON, e2));
-            e.EdoAcept=false;
-        }
+        
         //e2 se hace estado de aceptacion
         e2.EdoAcept=true;
         //se borran los estados de aceptacion que tenia
@@ -293,7 +312,7 @@ public class AFN {
     }
     
     
-    public void ConvAFNaAFD() {
+    public void ConvAFNaAFD(String archTabla){
         int CardAlfabeto, NumEdosAFD;
         int i , j, r ;
         char[] arrAlfabeto;
@@ -352,13 +371,94 @@ public class AFN {
             }
         }
         NumEdosAFD = j;
-        i=0;
-        for(ConjIJ c: EdosAFD){         
+        //tabla
+        //List<List<Integer>> TablaAFD=new ArrayList<List<Integer>>();
+        //contadores y token
+        int contador=0,tkn=0;
+        //escritura de la tabla
+        File file = new File(archTabla + ".txt");
+        FileWriter fichero = null;
+        BufferedWriter pw = null;
+        //File archivo = new File (archTabla + ".txt");
+//        FileReader fr = new FileReader (archivo);
+//        BufferedReader br = new BufferedReader(fr);
+        try {
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+            fichero = new FileWriter(file);
+            pw = new BufferedWriter(fichero);
+            int b=0;
+            for(ConjIJ con: EdosAFD){ 
+                for(int a=0; a<=256; a++){ 
+                     
+                        if(a<=255){
+                            contador=0;
+                            tkn=0;
+    //                        System.out.println(IrA(con.conjIJ, (char)a));
+    //                        System.out.println(con.conjIJ);
+                            HashSet<Estado> ira= new HashSet<Estado>();
+                            ira=IrA(con.conjIJ, (char)a);
+                            for(ConjIJ sj: EdosAFD){
+                                
+                                if(ira.equals(sj.conjIJ)){
+//                                    System.out.println(IrA(con.conjIJ, (char)a));
+//                                    System.out.println(con.conjIJ);
+                                    //System.out.println("a = " + a);
+                                    pw.write("+"+tkn+" ");
+                                    //pw.write(tkn+" ");
+                                    contador=1;
+                                }
+                                tkn++;//par ver en que Sj esta
+                            }
+                            if(contador==0){
+                                pw.write("-1 ");
+                            }
+
+                        }else{
+                            contador=0;
+                            tkn=0;
+                            for(Estado x: con.conjIJ){ 
+                                for(Estado y: this.EdosAcept){ 
+                                    if(y.IdEstado==x.IdEstado){//se encuentra el estado de aceptacion entre los Sj y el AFN
+                                        tkn=x.Token;
+                                        contador++;
+                                        //System.out.println("y.IdEstado = " + y.IdEstado);
+                                        //System.out.println("x.IdEstado = " + x.IdEstado);
+                                    }
+                                }
+                            }
+    //                        System.out.println("contador = " + contador);
+                            if(contador==1){
+                                pw.write("+"+tkn + " ");
+                            }else{
+                                pw.write("-1 ");
+                            }
+                        }       
+                    
+                    
+                }
+                b++;
+                System.out.println(b);
+                pw.write("\n");
+            }
             
-            System.out.println(i);
-            System.out.println(c);
-            i++;
+        } catch (IOException ex) {
+            Logger.getLogger(AFN.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+           try {
+           // Nuevamente aprovechamos el finally para 
+           // asegurarnos que se cierra el fichero.
+           if (null != fichero)
+               pw.close();
+              fichero.close();
+           } catch (Exception e2) {
+              e2.printStackTrace();
+           }
         }
+        
+        
+        
     }
     
     public int indiceCaracter(char [] pajar, char aguja){
@@ -371,7 +471,7 @@ public class AFN {
             }
             return  -1;
     }
-    public void UnionEspecialANFs(AFN f, int Token){
+    public void UnionEspecialANFs(AFN f, int token){
         Estado e;
         if(!this.SeAgregoAFNUnionLexico){
             this.EdosAFN.clear();
@@ -381,16 +481,12 @@ public class AFN {
             this.EdoIni=e;
             this.EdosAFN.add(e);
             this.SeAgregoAFNUnionLexico=true;
-            //asignar el token 10 al primer AFN
-            for(Estado EdoAcep: this.EdosAcept){
-                EdoAcep.Token=10;
-            }
         }else{
             this.EdoIni.Trans.add(new Transicion(c.EPSILON, f.EdoIni));
         }
-        //aginacion de token a al segundo estado
+        //aginacion de token al segundo AFN
         for(Estado EdoAcep: f.EdosAcept){
-            EdoAcep.Token=Token;
+            EdoAcep.Token=token;
         }
         for(char c: f.Alfabeto){
             this.Alfabeto.add(c);
@@ -401,10 +497,12 @@ public class AFN {
         for(Estado c: f.EdosAcept){
             this.EdosAcept.add(c);
         }
+        
   
     }
         
     
+        
 
 
 }
