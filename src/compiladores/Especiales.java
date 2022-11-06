@@ -10,6 +10,7 @@ package compiladores;
  * @author Jorge Ortega
  */
 public class Especiales {
+    //listado de los caracteres especiales
     final char EPSILON=(char)7;
     final char FIN=(char)0;
     final int ERORR=2000;

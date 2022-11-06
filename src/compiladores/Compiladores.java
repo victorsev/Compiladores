@@ -66,18 +66,27 @@ public class Compiladores {
         
         //(a|b)+c+
         a.concatenar(c);
-        
+        //se crea un AFN vacio para asignar el token al no vacio
         AFN d =new AFN();
+        //por cada AFN que tengamos se repite la union
         d.UnionEspecialANFs(a, 10);
-        a.ConvAFNaAFD("AFD");
-        AFD e =new AFD();
-        e.leerAFDdeArchivo("AFD", 0);
-        System.out.println("TablaAFD = " + e.TablaAFD.get(0).get(256));
         
-        AnalizLexico analizador = new AnalizLexico("abcc", "AFD", 0);
+        
+//        Se convierte el AFN a un AFD creando su tabla en archivo
+        a.ConvAFNaAFD("AFD");
+        //se crea unAFD para leer la tabla
+        AFD e =new AFD();
+        e.leerAFDdeArchivo("AFD", 0);//nombre del archivo y id del AFN
+        //impresion de la tabla
+        System.out.println("TablaAFD = " + e.TablaAFD.get(0).get(256));
+        //se crea el ananlizador lexico se le pasa cadena AFD y id
+        AnalizLexico analizador = new AnalizLexico("abccccc", "AFD", 0);
         int res=0;
+        //se analiza el token
         res=analizador.yylex();
+        //imprime el token
         System.out.println("analizador = " + res);
+        //imprime el lexema
         System.out.println("analizador = " + analizador.yytext);
         
 //        //CerraduraEpsilon
@@ -103,8 +112,8 @@ public class Compiladores {
 //            
 //        }
 //        
-        
-        
+//        
+//        
         
     }
     

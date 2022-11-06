@@ -22,7 +22,7 @@ import java.util.logging.Logger;
  * @author Jorge Ortega
  */
 public class AFD {
-    List<List<Integer>> TablaAFD=new ArrayList<List<Integer>>();
+    List<List<Integer>> TablaAFD=new ArrayList<List<Integer>>();//lista de listas
     public AFD(){
         
     }
@@ -32,6 +32,7 @@ public class AFD {
         FileReader fr=null;
         BufferedReader br =null;
         Stack<String> lineas= new Stack<String>();
+        Stack<String> lineasAux= new Stack<String>();
         String linea;
 
         try {
@@ -39,29 +40,28 @@ public class AFD {
             fr = new FileReader (archivo);
             br = new BufferedReader(fr);
             int columna=0;
+            //lee linea a linea y la pone en una pila
             while((linea=br.readLine())!=null){
-                //System.out.println(linea);
-                lineas.push(linea);               
+                lineasAux.push(linea);               
             }
+            //se pone en el orden orignial
+            while(lineasAux.size()!=0){
+                lineas.push(lineasAux.pop());
+            }
+            //se lee la pila
             while(lineas.size()!=0){
                 this.TablaAFD.add(new ArrayList<Integer>());
                 linea=lineas.pop();
                 for(int tam=0, cont=0; cont<=256; cont++){  
                     tam=linea.length();
-                    //System.out.println("tam = " + tam);
-                    //System.out.println("cont = " + cont);
-
+                    //Se agrega un elemento hasta donde encuentre un espacio
                     this.TablaAFD.get(columna).add(parseInt(linea.substring(0, linea.indexOf(" "))));//agregarFila
-                    //System.out.println("this.Tabla.get(columna).get(cont) = " + this.TablaAFD.get(columna).get(cont));
-                    
+                    //la cadena se recorta hasta donde encontro el estacio para la siguiente iteracion
                     linea=linea.substring(linea.indexOf(" ")+1, tam);
-                    //System.out.println("linea = " + linea);
                 }
+                //se agrega otra columna
                 columna++;
-            }
-            //System.out.println("TablaAFD = " + this.TablaAFD);
-            
-            
+            }  
         } catch (FileNotFoundException ex) {
             Logger.getLogger(AFD.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {

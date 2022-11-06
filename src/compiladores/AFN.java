@@ -320,7 +320,7 @@ public class AFN {
         boolean existe;
 
         HashSet<Estado> ConjAux = new HashSet<Estado>();
-        HashSet<ConjIJ> EdosAFD = new HashSet<ConjIJ>();
+        Queue<ConjIJ> EdosAFD = new LinkedList<ConjIJ>();
         Queue<ConjIJ> EdosSinAnalizar = new LinkedList<ConjIJ>();
         
         EdosAFD.clear();
@@ -328,6 +328,7 @@ public class AFN {
         CardAlfabeto=Alfabeto.size();
         
         arrAlfabeto=new char [CardAlfabeto];
+        //arrAlfabeto=new char [255];
         i=0;
         
         for(char c: Alfabeto){
@@ -336,6 +337,7 @@ public class AFN {
         
         j=0;// este es el contador de los estados
         Ij= new ConjIJ(CardAlfabeto);
+        //Ij= new ConjIJ(255);
         Ij.conjIJ=cerraduraEpsilon(this.EdoIni);
         Ij.j=j;
         
@@ -347,6 +349,7 @@ public class AFN {
             Ij=EdosSinAnalizar.remove();
             for(char c: arrAlfabeto){
                 Ik=new ConjIJ(CardAlfabeto);
+                //Ik=new ConjIJ(255);
                 Ik.conjIJ=IrA(Ij.conjIJ, c);
                 if(Ik.conjIJ.size() == 0 )//si entra no hubo transiciones
                     continue;
@@ -362,51 +365,44 @@ public class AFN {
                 }
                 if (!existe) {
                     Ik.j=j;
-                    r= indiceCaracter(arrAlfabeto, c);
-                    Ij.TransicionesAFD[r]=Ik.j;
                     EdosAFD.add(Ik);
                     EdosSinAnalizar.add(Ik);
+                    r= indiceCaracter(arrAlfabeto, c);
+                    Ij.TransicionesAFD[r]=Ik.j;
+                    
                     j++;
                 }
+                
             }
         }
         NumEdosAFD = j;
+        
         //tabla
-        //List<List<Integer>> TablaAFD=new ArrayList<List<Integer>>();
-        //contadores y token
+        //contador y token
         int contador=0,tkn=0;
         //escritura de la tabla
         File file = new File(archTabla + ".txt");
         FileWriter fichero = null;
         BufferedWriter pw = null;
-        //File archivo = new File (archTabla + ".txt");
-//        FileReader fr = new FileReader (archivo);
-//        BufferedReader br = new BufferedReader(fr);
         try {
             if (!file.exists()) {
                 file.createNewFile();
             }
             fichero = new FileWriter(file);
             pw = new BufferedWriter(fichero);
-            int b=0;
             for(ConjIJ con: EdosAFD){ 
                 for(int a=0; a<=256; a++){ 
                      
                         if(a<=255){
                             contador=0;
                             tkn=0;
-    //                        System.out.println(IrA(con.conjIJ, (char)a));
-    //                        System.out.println(con.conjIJ);
                             HashSet<Estado> ira= new HashSet<Estado>();
                             ira=IrA(con.conjIJ, (char)a);
-                            for(ConjIJ sj: EdosAFD){
-                                
+                            for(ConjIJ sj: EdosAFD){ 
+                                //si el irA de la cola con la letra y un elemento de la son iguales entonces
+                                //ahi va el numero del estado
                                 if(ira.equals(sj.conjIJ)){
-//                                    System.out.println(IrA(con.conjIJ, (char)a));
-//                                    System.out.println(con.conjIJ);
-                                    //System.out.println("a = " + a);
-                                    pw.write("+"+tkn+" ");
-                                    //pw.write(tkn+" ");
+                                    pw.write("+"+tkn+" ");//con signo para mantener el orden de la tabla
                                     contador=1;
                                 }
                                 tkn++;//par ver en que Sj esta
@@ -423,13 +419,10 @@ public class AFN {
                                     if(y.IdEstado==x.IdEstado){//se encuentra el estado de aceptacion entre los Sj y el AFN
                                         tkn=x.Token;
                                         contador++;
-                                        //System.out.println("y.IdEstado = " + y.IdEstado);
-                                        //System.out.println("x.IdEstado = " + x.IdEstado);
                                     }
                                 }
                             }
-    //                        System.out.println("contador = " + contador);
-                            if(contador==1){
+                            if(contador==1){//si hay estado de aceptacion se pone el token
                                 pw.write("+"+tkn + " ");
                             }else{
                                 pw.write("-1 ");
@@ -438,8 +431,6 @@ public class AFN {
                     
                     
                 }
-                b++;
-                System.out.println(b);
                 pw.write("\n");
             }
             
